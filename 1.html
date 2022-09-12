@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <title>demo1</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.10.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.10.0/mapbox-gl.js"></script>
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+    </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoiZHV4aWFvamkwMDMiLCJhIjoiY2w3bmhnYjJ6MWt3YjNwb2J2NXRuc3ZqeSJ9.qTGMu8I1jKbPGYdJ9_-gBg';
+    (async () => {
+    const map = new mapboxgl.Map({
+            container: 'map',
+            zoom: 5,
+            center: [127.501732, 42.103434],
+            pitch: 0,
+            bearing: 0,
+            style: 'mapbox://styles/duxiaoji003/cl7x05pgd000j15qx5tmyz11r'
+        });
+    await map.once('load');
+        map.flyTo({
+            center: [127.501732, 42.103434],
+            zoom: 13.3,
+            speed: 1.2,
+            pitch: 75,
+            curve: 1,
+            bearing: 160,
+            easing(t) {
+                return t;
+            }})
+
+
+// Run a timing loop to switch between day and night
+        await map.once('idle');
+        let lastTime = 0.0;
+        let animationTime = 0.0;
+        let cycleTime = 0.0;
+        let night = true;
+
+        const initialBearing = map.getBearing();
+
+        function frame(time) {
+            const elapsedTime = (time - lastTime) / 1000.0;
+
+            animationTime += elapsedTime;
+            cycleTime += elapsedTime;
+
+            if (cycleTime >= 10.0) {
+                if (night) {
+// night fog styling
+                    map.setFog({
+                        'range': [-1, 2],
+                        'horizon-blend': 0.3,
+                        'color': '#242B4B',
+                        'high-color': '#161B36',
+                        'space-color': '#0B1026',
+                        'star-intensity': 0.8
+                    });
+                } else {
+// day fog styling
+                    map.setFog({
+                        'range': [-1, 2],
+                        'horizon-blend': 0.3,
+                        'color': 'white',
+                        'high-color': '#add8e6',
+                        'space-color': '#d8f2ff',
+                        'star-intensity': 0.0
+                    });
+                }
+
+                night = !night;
+                cycleTime = 0.0;
+            }
+
+            const rotation = initialBearing + animationTime * 2.0;
+            map.setBearing(rotation % 360);
+
+            lastTime = time;
+
+            window.requestAnimationFrame(frame);
+        }
+
+        window.requestAnimationFrame(frame);
+    })();
+</script>
+
+</body>
+</html>
